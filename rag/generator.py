@@ -6,7 +6,7 @@ import os
 
 from google import genai
 
-DEFAULT_MODEL = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")
+DEFAULT_MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.5-flash")
 
 SYSTEM_PROMPT = (
     "Eres el asistente virtual de atención a clientes de Voltia Energía SpA, "
@@ -27,7 +27,7 @@ def build_prompt(question, chunks):
     return f"CONTEXTO:\n{build_context(chunks)}\n\nPREGUNTA DEL CLIENTE:\n{question}"
 
 
-def answer(question, chunks, model=None, api_key=None, max_tokens=500):
+def answer(question, chunks, model=None, api_key=None, max_tokens=1024):
     client = genai.Client(api_key=api_key or os.environ.get("GEMINI_API_KEY"))
     prompt = build_prompt(question, chunks)
     response = client.models.generate_content(
@@ -36,6 +36,10 @@ def answer(question, chunks, model=None, api_key=None, max_tokens=500):
         config={
             "system_instruction": SYSTEM_PROMPT,
             "max_output_tokens": max_tokens,
+            # Sin "thinking" extendido: es una respuesta de FAQ corta, no un
+            # problema de razonamiento complejo, y el thinking consume del
+            # mismo presupuesto de max_output_tokens.
+            "thinking_config": {"thinking_budget": 0},
         },
     )
     return response.text

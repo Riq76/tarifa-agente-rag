@@ -73,7 +73,7 @@ precisión los pasajes relevantes, como muestran las pruebas en `tests/test_retr
 | Componente | Tecnología |
 |---|---|
 | Lenguaje | Python 3.11 |
-| Generación de respuestas | API de Google Gemini (`gemini-2.5-flash`, tier gratuito) |
+| Generación de respuestas | API de Google Gemini (`gemini-3.5-flash`, tier gratuito) |
 | Recuperación (retrieval) | scikit-learn (TF-IDF + similitud coseno) |
 | Lectura de PDF | pypdf |
 | Servidor web | Flask + Gunicorn |
@@ -151,44 +151,35 @@ Ver guía completa en [`deploy/OCI_DEPLOY.md`](deploy/OCI_DEPLOY.md).
 
 ## 7. Ejemplos de respuestas generadas por el agente
 
-> Estos son ejemplos reales del paso de **recuperación** (los fragmentos que el agente
-> encuentra en `data/` antes de redactar la respuesta), verificados con
-> `tests/test_retriever.py`. La redacción final la hace el modelo Gemini a partir de ese
-> contexto; al ejecutar el proyecto con tu propia `GEMINI_API_KEY` obtendrás la
-> respuesta completa generada, con este mismo formato.
+> Transcripciones reales de `agent_cli.py`, generadas con el modelo `gemini-3.5-flash`.
 
 **Pregunta:** ¿Por cuántos meses me pueden cobrar un Consumo No Registrado (CNR)?
 
-Fragmentos recuperados: `FAQ #6 (CNR)`, `PDF página 2`, `FAQ #5 (CNR)`
+Fragmentos recuperados: `FAQ #6 (CNR)` (score=0.428), `PDF página 2` (score=0.253), `FAQ #8 (CNR)` (score=0.089)
 
 Respuesta del agente:
-> Depende de la causa. Si la falla del medidor **no es imputable a ti** (falla interna,
-> error del concesionario), el cobro se limita a un máximo de **3 meses**. Si la causa
-> **sí te es imputable** (manipulación del medidor, conexión clandestina, negativa de
-> acceso acreditada), el cobro puede llegar hasta **12 meses**, calculado sobre el
-> promedio de tu consumo en los períodos verificados como correctos. (Fuente: FAQ #6)
+> El plazo máximo por el cual le pueden cobrar un Consumo No Registrado (CNR) depende de la causa:
+> * **No imputable al cliente** (por ejemplo, falla del medidor o error del concesionario): Se limita a un máximo de **3 meses**.
+> * **Imputable al cliente** (por ejemplo, manipulación, conexión clandestina o negativa de acceso acreditada): Se puede cobrar hasta por **12 meses**.
+> (Fuente: FAQ #6 (CNR) y PDF página 2)
 
 **Pregunta:** ¿Cuál es la diferencia entre la tarifa BT1 y la BT3?
 
-Fragmentos recuperados: `FAQ #11 (Tarifas)`, `PDF página 3`, `FAQ #20 (Tarifas)`
+Fragmentos recuperados: `FAQ #11 (Tarifas)` (score=0.367), `PDF página 3` (score=0.230), `FAQ #13 (Tarifas)` (score=0.116)
 
 Respuesta del agente:
-> La tarifa **BT1** es la más simple: no mide demanda de potencia y la usan clientes
-> residenciales y pequeños comerciales; solo debería tener Cargo Fijo y Energía. La
-> tarifa **BT3** sí mide la **demanda máxima leída** por el medidor y se aplica a
-> clientes medianos con consumo variable, agregando un cargo de Demanda ($) a la
-> boleta. (Fuente: FAQ #11)
+> La diferencia principal radica en la medición y el cobro de la demanda (potencia):
+> * **Tarifa BT1:** Es la más simple y no tiene medición de demanda de potencia. Solo incluye Cargo Fijo y Energía (Base y Adicional si corresponde), y nunca debe tener cargos de Demanda ni Potencia Contratada. Es usada por clientes residenciales y pequeños comerciales. (Fuente: FAQ #11 y PDF página 3)
+> * **Tarifa BT3:** Sí registra la potencia máxima real mediante el medidor. Esta potencia, llamada "Demanda Facturada", se utiliza para calcular el cargo de Demanda en esta tarifa. (Fuente: FAQ #13 y PDF página 3)
 
 **Pregunta:** ¿Qué es el consumo provisorio y por qué me llegó ese cargo?
 
-Fragmentos recuperados: `PDF página 2`, `FAQ #2 (Consumo provisorio)`, `PDF página 6`
+Fragmentos recuperados: `FAQ #2 (Consumo provisorio)` (score=0.215), `PDF página 6` (score=0.196), `PDF página 2` (score=0.193)
 
 Respuesta del agente:
-> Es una estimación que la distribuidora factura cuando no pudo tomar la lectura real
-> de tu medidor ese mes (por ejemplo, medidor inaccesible o falla de comunicación). No
-> es un error ni una sanción: cuando vuelve la lectura real, se aplica un ajuste
-> ("Devolución Provisorio") a tu favor o en tu contra según corresponda. (Fuente: PDF
-> página 2)
+> El consumo provisorio es una estimación de consumo que realiza la distribuidora cuando no pudo tomar la lectura real de su medidor (debido a un medidor inaccesible, falla de comunicación o atraso del lector).
+> Le llegó este cargo como un mecanismo regulado para no dejar de facturar mientras se resuelve el problema de lectura. No representa un error, una irregularidad ni una sanción, y se calcula basándose en el consumo de referencia de sus meses anteriores.
+> (Fuente: FAQ #2 (Consumo provisorio), PDF página 2 y PDF página 6)
 
 ## 8. Fuente de conocimiento del agente
 

@@ -11,12 +11,15 @@ Endpoints:
 import os
 from pathlib import Path
 
+from dotenv import load_dotenv
 from flask import Flask, jsonify, render_template, request
 
-from rag.retriever import Retriever
-from rag.generator import answer
-
 ROOT = Path(__file__).resolve().parent
+load_dotenv(ROOT / ".env")
+
+from rag.retriever import Retriever  # noqa: E402
+from rag.generator import answer  # noqa: E402
+
 INDEX_PATH = ROOT / "tfidf_index.pkl"
 
 app = Flask(__name__)

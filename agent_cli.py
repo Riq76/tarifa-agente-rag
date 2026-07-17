@@ -9,8 +9,11 @@ Uso:
 import sys
 from pathlib import Path
 
+from dotenv import load_dotenv
+
 ROOT = Path(__file__).resolve().parent
 sys.path.append(str(ROOT))
+load_dotenv(ROOT / ".env")
 
 from rag.retriever import Retriever  # noqa: E402
 from rag.generator import answer  # noqa: E402
