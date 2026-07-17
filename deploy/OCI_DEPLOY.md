@@ -4,13 +4,7 @@ Así es como llevamos el agente a una instancia Compute **Always Free** de OCI, 
 
 ## 1. Crear la instancia Compute
 
-1. En la consola de OCI: **Compute → Instances → Create Instance**.
-2. Nombre: `voltia-agente-rag`.
-3. Imagen: **Canonical Ubuntu 22.04**.
-4. Forma (shape): Always Free — `VM.Standard.E2.1.Micro` (AMD, 1 GB RAM) o `VM.Standard.A1.Flex` (ARM, hasta 4 OCPU / 24 GB RAM, recomendada si está disponible en tu región).
-5. En **Networking**, usa una VCN con subred pública y asigna una **IP pública**.
-6. Descarga o usa un par de llaves SSH para conectarte.
-7. Crea la instancia y anota la **IP pública**.
+En la consola de OCI, ve a **Compute → Instances → Create Instance**. Le pusimos de nombre `voltia-agente-rag`, pero puedes usar el que quieras.
 
 Como imagen, elige **Canonical Ubuntu 22.04** (los comandos de esta guía asumen Ubuntu, con `apt`). Y en la forma (shape), busca alguna que esté marcada como *Always Free*: la `VM.Standard.A1.Flex` (Ampere, hasta 4 OCPU y 24 GB de RAM) suele rendir mucho mejor que la `VM.Standard.E2.1.Micro` (AMD, 1 GB), así que si tu región la tiene disponible, prefiérela.
 
