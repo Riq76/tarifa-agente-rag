@@ -1,16 +1,16 @@
 # -*- coding: utf-8 -*-
 """Paso de generación: arma el prompt con el contexto recuperado y llama a la
-API de Claude (Anthropic) para redactar la respuesta final."""
+API de Google Gemini para redactar la respuesta final."""
 
 import os
 
-from anthropic import Anthropic
+from google import genai
 
-DEFAULT_MODEL = os.environ.get("CLAUDE_MODEL", "claude-sonnet-5")
+DEFAULT_MODEL = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")
 
 SYSTEM_PROMPT = (
-    "Eres el asistente virtual de atención a clientes de Optium Energía SpA, "
-    "empresa chilena de servicios de gestión energética. "
+    "Eres el asistente virtual de atención a clientes de Voltia Energía SpA, "
+    "empresa chilena de asesoría en gestión energética. "
     "Responde SIEMPRE en español, de forma breve y directa. "
     "Usa exclusivamente la información del CONTEXTO entregado; si la respuesta "
     "no está en el contexto, dilo explícitamente y no inventes datos ni montos. "
@@ -28,12 +28,14 @@ def build_prompt(question, chunks):
 
 
 def answer(question, chunks, model=None, api_key=None, max_tokens=500):
-    client = Anthropic(api_key=api_key or os.environ.get("ANTHROPIC_API_KEY"))
+    client = genai.Client(api_key=api_key or os.environ.get("GEMINI_API_KEY"))
     prompt = build_prompt(question, chunks)
-    response = client.messages.create(
+    response = client.models.generate_content(
         model=model or DEFAULT_MODEL,
-        max_tokens=max_tokens,
-        system=SYSTEM_PROMPT,
-        messages=[{"role": "user", "content": prompt}],
+        contents=prompt,
+        config={
+            "system_instruction": SYSTEM_PROMPT,
+            "max_output_tokens": max_tokens,
+        },
     )
-    return response.content[0].text
+    return response.text

@@ -5,7 +5,7 @@ Guía paso a paso para desplegar el agente en una instancia Compute **Always Fre
 ## 1. Crear la instancia Compute
 
 1. En la consola de OCI: **Compute → Instances → Create Instance**.
-2. Nombre: `optium-agente-rag`.
+2. Nombre: `voltia-agente-rag`.
 3. Imagen: **Canonical Ubuntu 22.04**.
 4. Forma (shape): Always Free — `VM.Standard.E2.1.Micro` (AMD, 1 GB RAM) o `VM.Standard.A1.Flex` (ARM, hasta 4 OCPU / 24 GB RAM, recomendada si está disponible en tu región).
 5. En **Networking**, usa una VCN con subred pública y asigna una **IP pública**.
@@ -35,21 +35,21 @@ sudo usermod -aG docker $USER
 ## 4. Clonar el repositorio y configurar la API key
 
 ```bash
-git clone https://github.com/<tu-usuario>/optium-agente-rag.git
-cd optium-agente-rag
+git clone https://github.com/<tu-usuario>/voltia-agente-rag.git
+cd voltia-agente-rag
 cp .env.example .env
-nano .env   # pega tu ANTHROPIC_API_KEY real
+nano .env   # pega tu GEMINI_API_KEY real
 ```
 
 ## 5. Construir y correr el contenedor
 
 ```bash
-docker build -t optium-agente-rag .
-docker run -d --name optium-agente \
+docker build -t voltia-agente-rag .
+docker run -d --name voltia-agente \
   --env-file .env \
   -p 8080:8080 \
   --restart unless-stopped \
-  optium-agente-rag
+  voltia-agente-rag
 ```
 
 ## 6. Verificar que quedó funcionando
@@ -73,11 +73,11 @@ Si prefieres no administrar una VM completa:
 1. Sube la imagen construida a **OCI Container Registry (OCIR)**:
    ```bash
    docker login <region>.ocir.io -u '<tenancy-namespace>/<tu-usuario>' -p '<auth-token>'
-   docker tag optium-agente-rag <region>.ocir.io/<tenancy-namespace>/optium-agente-rag:latest
-   docker push <region>.ocir.io/<tenancy-namespace>/optium-agente-rag:latest
+   docker tag voltia-agente-rag <region>.ocir.io/<tenancy-namespace>/voltia-agente-rag:latest
+   docker push <region>.ocir.io/<tenancy-namespace>/voltia-agente-rag:latest
    ```
 2. En la consola: **Developer Services → Container Instances → Create Container Instance**.
-3. Selecciona la imagen recién subida desde OCIR, define el puerto `8080` y agrega `ANTHROPIC_API_KEY` como variable de entorno.
+3. Selecciona la imagen recién subida desde OCIR, define el puerto `8080` y agrega `GEMINI_API_KEY` como variable de entorno.
 3. OCI asigna una IP pública al Container Instance — úsala como enlace de evidencia.
 
 ## Notas de seguridad

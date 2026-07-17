@@ -54,8 +54,8 @@ def load_all_chunks(data_dir):
     """Carga y combina los fragmentos del PDF y del CSV de un directorio de datos."""
     data_dir = Path(data_dir)
     chunks = []
-    pdf_path = data_dir / "Base_Conocimiento_Optium_Energia.pdf"
-    csv_path = data_dir / "FAQ_Optium_Energia.csv"
+    pdf_path = data_dir / "Base_Conocimiento_Voltia_Energia.pdf"
+    csv_path = data_dir / "FAQ_Voltia_Energia.csv"
     if pdf_path.exists():
         chunks.extend(load_pdf_chunks(pdf_path))
     if csv_path.exists():

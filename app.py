@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Aplicación web (Flask) que expone el agente RAG de Optium Energía.
+"""Aplicación web (Flask) que expone el agente RAG de Voltia Energía.
 
 Endpoints:
     GET  /        Interfaz de chat simple (HTML)

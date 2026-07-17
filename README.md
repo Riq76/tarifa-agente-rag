@@ -1,4 +1,6 @@
-# Agente RAG — Optium Energía (Challenge Alura)
+# Agente RAG — Voltia Energía (Challenge Alura)
+
+> Voltia Energía SpA es una empresa **ficticia**, creada exclusivamente para este proyecto educativo. Cualquier parecido con datos reales de contacto, dirección o RUT es coincidencia; no representa a ninguna empresa existente.
 
 Asistente virtual que responde preguntas de clientes sobre facturación eléctrica chilena
 (tarifas BT/AT, consumo provisorio y Consumo No Registrado — CNR), usando como única
@@ -9,20 +11,20 @@ Proyecto desarrollado para el Challenge Alura "Agente Inteligente".
 
 ## 1. Descripción general
 
-Optium Energía SpA es una empresa chilena de servicios de gestión energética. Sus clientes
+Voltia Energía SpA es una empresa chilena ficticia de asesoría en gestión energética. Sus clientes
 preguntan con frecuencia por qué llegó un cargo de "consumo provisorio", si corresponde un
 cobro retroactivo de energía (CNR) y por cuántos meses, o qué significa cada tarifa de su
 boleta (BT1, BT3, AT3, etc.).
 
 Este proyecto implementa un agente que:
 
-1. Lee un documento fuente propio (`data/Base_Conocimiento_Optium_Energia.pdf` y
-   `data/FAQ_Optium_Energia.csv`) con la política de facturación, la guía de tarifas y el
+1. Lee un documento fuente propio (`data/Base_Conocimiento_Voltia_Energia.pdf` y
+   `data/FAQ_Voltia_Energia.csv`) con la política de facturación, la guía de tarifas y el
    marco normativo de la SEC sobre CNR.
 2. Indexa ese contenido para poder recuperar los fragmentos más relevantes ante cada
    pregunta.
-3. Usa la API de **Claude (Anthropic)** para redactar, en español, una respuesta basada
-   únicamente en los fragmentos recuperados — citando la fuente usada.
+3. Usa la API de **Google Gemini** (tier gratuito) para redactar, en español, una
+   respuesta basada únicamente en los fragmentos recuperados — citando la fuente usada.
 
 ## 2. Arquitectura de la solución
 
@@ -30,7 +32,7 @@ Este proyecto implementa un agente que:
                  ┌─────────────────────────┐
                  │  data/                  │
                  │  - Base_Conocimiento.pdf│
-                 │  - FAQ_Optium.csv       │
+                 │  - FAQ_Voltia.csv       │
                  └───────────┬─────────────┘
                              │ scripts/build_index.py
                              ▼
@@ -46,7 +48,7 @@ Este proyecto implementa un agente que:
                  │
                  ▼
         rag/generator.py → arma el prompt (contexto + pregunta) y llama
-                            a la API de Claude (Anthropic)
+                            a la API de Google Gemini
                  │
                  ▼
         Respuesta en español + fuente citada
@@ -71,7 +73,7 @@ precisión los pasajes relevantes, como muestran las pruebas en `tests/test_retr
 | Componente | Tecnología |
 |---|---|
 | Lenguaje | Python 3.11 |
-| Generación de respuestas | API de Anthropic Claude (`claude-sonnet-5`) |
+| Generación de respuestas | API de Google Gemini (`gemini-2.5-flash`, tier gratuito) |
 | Recuperación (retrieval) | scikit-learn (TF-IDF + similitud coseno) |
 | Lectura de PDF | pypdf |
 | Servidor web | Flask + Gunicorn |
@@ -81,13 +83,13 @@ precisión los pasajes relevantes, como muestran las pruebas en `tests/test_retr
 ## 4. Estructura del repositorio
 
 ```
-optium-agente-rag/
+voltia-agente-rag/
 ├── app.py                  # Aplicación web Flask (UI + endpoint /ask)
 ├── agent_cli.py             # Agente por línea de comandos
 ├── rag/
 │   ├── loader.py            # Lectura y chunking del PDF/CSV
 │   ├── retriever.py         # Índice TF-IDF y búsqueda por similitud
-│   └── generator.py         # Prompt + llamada a la API de Claude
+│   └── generator.py         # Prompt + llamada a la API de Gemini
 ├── scripts/build_index.py   # Construye tfidf_index.pkl desde data/
 ├── data/                    # Documento fuente (PDF y CSV)
 ├── templates/index.html     # Interfaz de chat
@@ -103,13 +105,13 @@ optium-agente-rag/
 ### 5.1 Localmente
 
 ```bash
-git clone https://github.com/<tu-usuario>/optium-agente-rag.git
-cd optium-agente-rag
+git clone https://github.com/<tu-usuario>/voltia-agente-rag.git
+cd voltia-agente-rag
 python3 -m venv venv && source venv/bin/activate
 pip install -r requirements.txt
 
 cp .env.example .env
-# edita .env y pega tu ANTHROPIC_API_KEY (console.anthropic.com)
+# edita .env y pega tu GEMINI_API_KEY (gratis en aistudio.google.com/apikey)
 
 python scripts/build_index.py   # construye el índice de recuperación
 
@@ -124,8 +126,8 @@ python app.py
 ### 5.2 Con Docker
 
 ```bash
-docker build -t optium-agente-rag .
-docker run -p 8080:8080 --env-file .env optium-agente-rag
+docker build -t voltia-agente-rag .
+docker run -p 8080:8080 --env-file .env voltia-agente-rag
 ```
 
 ### 5.3 Pruebas
@@ -144,15 +146,15 @@ Ver guía completa en [`deploy/OCI_DEPLOY.md`](deploy/OCI_DEPLOY.md).
 - ¿Qué es el consumo provisorio y por qué me llegó ese cargo?
 - ¿Cuál es la diferencia entre la tarifa BT1 y la BT3?
 - ¿Cuánto tiene la distribuidora para responder un reclamo de facturación?
-- ¿Cómo protege Optium los datos de consumo de mis medidores?
+- ¿Cómo protege Voltia los datos de consumo de mis medidores?
 - Recién me mudé y me llegó un cobro de CNR de meses anteriores, ¿corresponde?
 
 ## 7. Ejemplos de respuestas generadas por el agente
 
 > Estos son ejemplos reales del paso de **recuperación** (los fragmentos que el agente
 > encuentra en `data/` antes de redactar la respuesta), verificados con
-> `tests/test_retriever.py`. La redacción final la hace el modelo Claude a partir de ese
-> contexto; al ejecutar el proyecto con tu propia `ANTHROPIC_API_KEY` obtendrás la
+> `tests/test_retriever.py`. La redacción final la hace el modelo Gemini a partir de ese
+> contexto; al ejecutar el proyecto con tu propia `GEMINI_API_KEY` obtendrás la
 > respuesta completa generada, con este mismo formato.
 
 **Pregunta:** ¿Por cuántos meses me pueden cobrar un Consumo No Registrado (CNR)?
@@ -190,11 +192,11 @@ Respuesta del agente:
 
 ## 8. Fuente de conocimiento del agente
 
-- [`data/Base_Conocimiento_Optium_Energia.pdf`](data/Base_Conocimiento_Optium_Energia.pdf):
+- [`data/Base_Conocimiento_Voltia_Energia.pdf`](data/Base_Conocimiento_Voltia_Energia.pdf):
   guía de tarifas eléctricas chilenas, consumo provisorio, política de CNR (con cita de
   D.S. N°327/1997 y R.Ex. N°1.952/2009 y N°2.520/2009 de la SEC), privacidad de datos y
   procedimiento de reclamos.
-- [`data/FAQ_Optium_Energia.csv`](data/FAQ_Optium_Energia.csv): 20 preguntas frecuentes en
+- [`data/FAQ_Voltia_Energia.csv`](data/FAQ_Voltia_Energia.csv): 20 preguntas frecuentes en
   formato tabular (categoría, pregunta, respuesta).
 
 ## 9. Evidencia de despliegue en OCI
