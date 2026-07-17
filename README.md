@@ -192,7 +192,7 @@ Respuesta del agente:
 
 ## 9. Evidencia de despliegue en OCI
 
-_(Completar tras seguir `deploy/OCI_DEPLOY.md`)_
-
-- Enlace público: `http://<IP_PUBLICA_OCI>:8080`
-- Captura de pantalla: `deploy/evidencia-oci.png`
+- **Enlace público:** http://148.116.109.139:8080
+- **Instancia:** `voltia-agent-rag` — Compute Always Free (Ampere `VM.Standard.A1.Flex`, Ubuntu 20.04), región `sa-valparaiso-1`.
+- **Despliegue:** contenedor Docker construido desde este mismo repo (ver `deploy/OCI_DEPLOY.md`), corriendo con `gunicorn` en el puerto 8080.
+- **Captura de pantalla:** `deploy/evidencia-oci.png` (conversación real con el agente desplegado, incluyendo pregunta sobre CNR y datos de contacto, con fuentes citadas).
