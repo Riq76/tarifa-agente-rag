@@ -1,6 +1,6 @@
 # Despliegue en Oracle Cloud Infrastructure (OCI)
 
-Así es como llevamos el agente a una instancia Compute **Always Free** de OCI, usando Docker. No es la única forma de hacerlo, pero es la que usamos para este proyecto y la dejamos documentada paso a paso.
+Así es como lleve el agente a una instancia Compute **Always Free** de OCI, usando Docker. No es la única forma de hacerlo, pero es la que use para este proyecto y la dejo documentada paso a paso.
 
 ## 1. Crear la instancia Compute
 
@@ -10,14 +10,15 @@ Como imagen, elige **Canonical Ubuntu 22.04** (los comandos de esta guía asumen
 
 En la sección de networking, asegúrate de que la instancia quede en una subred pública. Si es la primera instancia que creas en esa cuenta, probablemente no tengas todavía una VCN — puedes dejar que OCI te cree una nueva ahí mismo. Y en las llaves SSH, descarga la llave privada cuando te la ofrezcan: es tu única oportunidad, no se puede volver a descargar después.
 
-Un par de cosas que nos pasaron al hacerlo y que te pueden ahorrar tiempo:
+Un par de cosas que me pasó al hacerlo y que te pueden ahorrar tiempo:
 
 - A veces el checkbox para asignar IP pública automáticamente no se deja activar durante la creación (parece un bug de la consola cuando la subred recién se está armando). Si te pasa, simplemente crea la instancia igual y asigna la IP pública después, desde **Networking → tu VNIC → IP administration**.
 - Si la subred no tiene todavía un Internet Gateway, en la pestaña de Networking de la instancia vas a ver un atajo que dice "Connect public subnet to internet" — con eso se soluciona en un clic.
 
 ## 2. Abrir los puertos que vas a necesitar
 
-Necesitas dos puertos abiertos: el 22 para SSH (para poder conectarte y configurar todo) y el 8080 para la app.
+Necesitas dos puertos abiertos: el 22 para
+SSH (para poder conectarte y configurar todo) y el 8080 para la app.
 
 Ve al Network Security Group asociado a tu instancia (o a la Security List de la subred, si no usaste NSG) y agrega dos reglas de tipo Ingress, ambas con origen `0.0.0.0/0` y protocolo TCP: una para el puerto `22` y otra para el `8080`.
 
