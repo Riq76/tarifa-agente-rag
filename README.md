@@ -11,20 +11,18 @@ Proyecto desarrollado para el Challenge Alura "Agente Inteligente".
 
 ## 1. Descripción general
 
-Voltia Energía SpA es una empresa chilena ficticia de asesoría en gestión energética. Sus clientes
-preguntan con frecuencia por qué llegó un cargo de "consumo provisorio", si corresponde un
-cobro retroactivo de energía (CNR) y por cuántos meses, o qué significa cada tarifa de su
-boleta (BT1, BT3, AT3, etc.).
+Voltia Energía SpA es una empresa chilena ficticia de asesoría en gestión energética. A sus
+clientes les pasa algo bien común en el rubro eléctrico: les llega un cargo de "consumo
+provisorio" y no saben qué significa, o reciben un cobro retroactivo (CNR) y no tienen claro
+si corresponde ni por cuántos meses, o simplemente no entienden qué tarifa tienen en su
+boleta (BT1, BT3, AT3...). Este proyecto arma un agente que responde ese tipo de preguntas.
 
-Este proyecto implementa un agente que:
-
-1. Lee un documento fuente propio (`data/Base_Conocimiento_Voltia_Energia.pdf` y
-   `data/FAQ_Voltia_Energia.csv`) con la política de facturación, la guía de tarifas y el
-   marco normativo de la SEC sobre CNR.
-2. Indexa ese contenido para poder recuperar los fragmentos más relevantes ante cada
-   pregunta.
-3. Usa la API de **Google Gemini** (tier gratuito) para redactar, en español, una
-   respuesta basada únicamente en los fragmentos recuperados — citando la fuente usada.
+En términos generales, el agente hace tres cosas: lee un documento propio de la empresa
+(`data/Base_Conocimiento_Voltia_Energia.pdf` y `data/FAQ_Voltia_Energia.csv`, con la política
+de facturación, la guía de tarifas y el marco normativo de la SEC sobre CNR), indexa ese
+contenido para poder encontrar rápido los fragmentos relevantes ante cada pregunta, y usa
+**Google Gemini** (en su tier gratuito) para redactar la respuesta en español a partir de esos
+fragmentos, citando siempre de dónde la sacó.
 
 ## 2. Arquitectura de la solución
 
@@ -61,12 +59,13 @@ Este proyecto implementa un agente que:
 
 ### Por qué TF-IDF y no embeddings neuronales
 
-Se eligió **TF-IDF + similitud coseno** (scikit-learn) para la recuperación en vez de
-embeddings de un modelo neuronal. Es una decisión de diseño deliberada para este proyecto:
-sin dependencias de modelos pesados (torch/GPU) ni de una segunda API key solo para
-generar embeddings, lo que simplifica el despliegue en una instancia gratuita de OCI. Para
-la base de conocimiento del challenge (decenas de fragmentos), TF-IDF recupera con buena
-precisión los pasajes relevantes, como muestran las pruebas en `tests/test_retriever.py`.
+Para la recuperación usamos **TF-IDF + similitud coseno** (scikit-learn) en vez de embeddings
+de un modelo neuronal, y fue una decisión a propósito: nos evita depender de librerías
+pesadas (torch, GPU) o de una segunda API solo para generar embeddings, lo que hace más
+liviano el despliegue en una instancia gratuita de OCI. Con la cantidad de fragmentos que
+tiene la base de conocimiento de este proyecto (unas cuantas decenas), TF-IDF encuentra los
+pasajes relevantes con buena precisión — puedes verlo en las pruebas de
+`tests/test_retriever.py`.
 
 ## 3. Tecnologías utilizadas
 
@@ -104,26 +103,43 @@ voltia-agente-rag/
 
 ### 5.1 Localmente
 
+Cloná el repo y armá el entorno:
+
 ```bash
 git clone https://github.com/<tu-usuario>/voltia-agente-rag.git
 cd voltia-agente-rag
 python3 -m venv venv && source venv/bin/activate
 pip install -r requirements.txt
+```
 
+Después copiá el archivo de ejemplo de variables de entorno y completá tu propia key (es
+gratis, se genera en aistudio.google.com/apikey):
+
+```bash
 cp .env.example .env
-# edita .env y pega tu GEMINI_API_KEY (gratis en aistudio.google.com/apikey)
+```
 
-python scripts/build_index.py   # construye el índice de recuperación
+Con eso listo, construí el índice de recuperación una vez:
 
-# Opción A: agente por consola
+```bash
+python scripts/build_index.py
+```
+
+Y ya podés usar el agente, ya sea por consola:
+
+```bash
 python agent_cli.py "¿Por cuántos meses me pueden cobrar un CNR?"
+```
 
-# Opción B: aplicación web
+o levantando la app web y abriendo `http://localhost:8080` en el navegador:
+
+```bash
 python app.py
-# abre http://localhost:8080
 ```
 
 ### 5.2 Con Docker
+
+Si preferís no instalar nada en tu máquina más que Docker:
 
 ```bash
 docker build -t voltia-agente-rag .
@@ -132,13 +148,16 @@ docker run -p 8080:8080 --env-file .env voltia-agente-rag
 
 ### 5.3 Pruebas
 
+Hay pruebas de humo para el paso de recuperación que no necesitan API key:
+
 ```bash
 python tests/test_retriever.py
 ```
 
 ### 5.4 Despliegue en OCI
 
-Ver guía completa en [`deploy/OCI_DEPLOY.md`](deploy/OCI_DEPLOY.md).
+La guía completa, con capturas y todo lo que nos fue pasando al hacerlo, está en
+[`deploy/OCI_DEPLOY.md`](deploy/OCI_DEPLOY.md).
 
 ## 6. Ejemplos de preguntas que el agente puede responder
 
@@ -192,7 +211,13 @@ Respuesta del agente:
 
 ## 9. Evidencia de despliegue en OCI
 
-- **Enlace público:** http://148.116.109.139:8080
-- **Instancia:** `voltia-agent-rag` — Compute Always Free (Ampere `VM.Standard.A1.Flex`, Ubuntu 20.04), región `sa-valparaiso-1`.
-- **Despliegue:** contenedor Docker construido desde este mismo repo (ver `deploy/OCI_DEPLOY.md`), corriendo con `gunicorn` en el puerto 8080.
-- **Captura de pantalla:** `deploy/evidencia-oci.png` (conversación real con el agente desplegado, incluyendo pregunta sobre CNR y datos de contacto, con fuentes citadas).
+El agente está corriendo en una instancia Compute Always Free de OCI (`voltia-agent-rag`,
+Ampere `VM.Standard.A1.Flex` con Ubuntu 20.04, región `sa-valparaiso-1`), dentro de un
+contenedor Docker construido desde este mismo repo — el paso a paso está en
+[`deploy/OCI_DEPLOY.md`](deploy/OCI_DEPLOY.md).
+
+Podés probarlo vos mismo en: **http://148.116.109.139:8080**
+
+Y en [`deploy/evidencia-oci.png`](deploy/evidencia-oci.png) queda una captura de una
+conversación real con el agente ya desplegado, respondiendo sobre CNR y datos de contacto
+con sus fuentes citadas.
